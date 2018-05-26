@@ -7,16 +7,14 @@ import logic.ai.AI;
 import logic.gameplay.Board;
 import logic.gameplay.Move;
 import logic.gameplay.Player;
-import logic.gameplay.Board.Decision;
-import logic.gameplay.Player.Side;
 
-public class RandomMove extends Player implements AI {
-	public RandomMove(String name, Side s) {
-		super(name, s);
+public class RandomMovement extends Player implements AI {
+	public RandomMovement(String name, Side side) {
+		super(name, side);
 	}
 
-	public RandomMove(Side s) {
-		super("RandomAI", s);
+	public RandomMovement(Side side) {
+		super("RandomAI", side);
 	}
 
 	public Board.Decision makeMove(Board board) {
@@ -25,7 +23,6 @@ public class RandomMove extends Player implements AI {
 		if (moves.size() == 0)
 			return Board.Decision.GAME_ENDED;
 		Move m = moves.get(rand.nextInt(moves.size()));
-
 		return board.makeMove(m, getSide());
 	}
 

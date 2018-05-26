@@ -8,7 +8,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import logic.ai.AI;
-import logic.ai.impl.MinimaxMove;
+import logic.ai.impl.MinimaxMovement;
 import logic.gameplay.Board;
 import logic.gameplay.Move;
 import logic.gameplay.Player;
@@ -23,7 +23,7 @@ public class GameController {
 	int whiteWin;
 	boolean turn;
 	Player one;
-	MinimaxMove two;
+	MinimaxMovement two;
 	Board board;
 	Player current;
 	boolean isGameFinished;
@@ -61,7 +61,7 @@ public class GameController {
 	public void restartGame() {
 		// set the players
 		one = new Player("Player 1", Player.Side.BLACK);
-		two = new MinimaxMove(Player.Side.WHITE, 6);
+		two = new MinimaxMovement(Player.Side.WHITE, 6);
 
 		// set the game
 		turn = true;
@@ -114,7 +114,9 @@ public class GameController {
 					status = Status.PLAYERS_TURN;
 				} else {
 					do {
-						attemptMove();
+						if(isGameFinished == false)
+							attemptMove();
+						else break;
 					} while (current == two);
 					status = Status.PLAYERS_TURN;
 				}
@@ -177,8 +179,8 @@ public class GameController {
 			}
 		} else {
 			System.out.println("Game finished after: " + numbOfRounds + " rounds");
-			if (one instanceof MinimaxMove)
-				System.out.println("Avg time per move: " + ((MinimaxMove) one).getAverageTimePerMove());
+			if (one instanceof MinimaxMovement)
+				System.out.println("Avg time per move: " + ((MinimaxMovement) one).getAverageTimePerMove());
 		}
 	}
 
