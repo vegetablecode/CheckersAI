@@ -6,6 +6,7 @@ import app.Main;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import logic.ai.AI;
 import logic.ai.impl.MinimaxMovement;
@@ -28,9 +29,14 @@ public class GameController {
 	Player current;
 	boolean isGameFinished;
 	int numbOfRounds;
+	int aiDepth;
 
 	// util variables
 	GraphicsContext gc;
+	@FXML
+	TextField depthField;
+	@FXML
+	TextField logField;
 
 	// user interaction variables
 	Point startPosition;
@@ -55,13 +61,34 @@ public class GameController {
 		// draw a board
 		gc = boardCanvas.getGraphicsContext2D();
 		drawBoard(gc);
+		displayMessage("Click Restart to start a game!");
 	}
 
 	@FXML
+	public void finishGame() {
+		isGameFinished = true;
+		attemptMove();
+	}
+	
+	@FXML
 	public void restartGame() {
+		// get the depth
+		aiDepth = 6; // default value
+		int value = 0;
+		if (depthField.getText().isEmpty()) {
+			displayMessage("Cannot remove the node. There is no value entered.");
+		} else {
+			try {
+				value = Integer.parseInt(depthField.getText());
+				aiDepth = value;
+			} catch (NumberFormatException e) {
+				displayMessage("The value should be a type of integer!");
+			}
+		}
+		
 		// set the players
 		one = new Player("Player 1", Player.Side.BLACK);
-		two = new MinimaxMovement(Player.Side.WHITE, 6);
+		two = new MinimaxMovement(Player.Side.WHITE, aiDepth);
 
 		// set the game
 		turn = true;
@@ -80,6 +107,7 @@ public class GameController {
 		// draw the board
 		updateBoard(board);
 		status = Status.PLAYERS_TURN;
+		displayMessage("Depth of MiniMax: " + aiDepth);
 
 	}
 
@@ -125,6 +153,7 @@ public class GameController {
 	}
 
 	public void attemptMove() {
+		displayMessage("");
 		if (!isGameFinished) {
 			// check if the move is valid
 			Move move;
@@ -132,6 +161,7 @@ public class GameController {
 			if (current instanceof AI) {
 				decision = ((AI) current).makeMove(board);
 				updateBoard(board);
+				System.out.println(two.getAverageTimePerMove());
 			} else {
 				move = new Move(yStart, xStart, yEnd, xEnd);
 				decision = current.makeMove(move, board);
@@ -139,20 +169,21 @@ public class GameController {
 
 			if (decision == Board.Decision.FAILED_INVALID_DESTINATION
 					|| decision == Board.Decision.FAILED_MOVING_INVALID_PIECE) {
-				System.out.println("Move Failed");
+				displayMessage("Move Failed");
 				drawPlayer(gc, xStart, yStart, SetColor.EMPTY);
 				drawPlayer(gc, xStart, yStart, SetColor.BLACK);
 				status = Status.PLAYERS_TURN;
 				// don't update anything
 			} else if (decision == Board.Decision.COMPLETED) {
+				numbOfRounds++;
 				updateBoard(board);
 				if (board.getNumbOfBlackPieces() == 0) {
-					System.out.println("White wins with " + board.getNumbOfWhitePieces() + " pieces left");
+					displayMessage("White wins with " + board.getNumbOfWhitePieces() + " pieces left");
 					whiteWin++;
 					isGameFinished = true;
 				}
 				if (board.getNumbOfWhitePieces() == 0) {
-					System.out.println("Black wins with " + board.getNumbOfBlackPieces() + " pieces left");
+					displayMessage("Black wins with " + board.getNumbOfBlackPieces() + " pieces left");
 					blackWin++;
 					isGameFinished = true;
 				}
@@ -162,23 +193,23 @@ public class GameController {
 					current = one;
 				turn = !turn;
 			} else if (decision == Board.Decision.ADDITIONAL_MOVE) {
-				System.out.println("Additional Move");
+				displayMessage("Additional Move");
 				status = Status.ADDITIONAL_MOVE;
 				drawPlayer(gc, xEnd, yEnd, SetColor.SELECTED);
 			} else if (decision == Board.Decision.GAME_ENDED) {
 				// current player cannot move
 				if (current.getSide() == Player.Side.BLACK) {
-					System.out.println("White wins");
+					displayMessage("White wins");
 					whiteWin++;
 
 				} else {
-					System.out.println("Black wins");
+					displayMessage("Black wins");
 					blackWin++;
 				}
 				isGameFinished = true;
 			}
 		} else {
-			System.out.println("Game finished after: " + numbOfRounds + " rounds");
+			displayMessage("Game finished after: " + numbOfRounds/2 + " rounds");
 			if (one instanceof MinimaxMovement)
 				System.out.println("Avg time per move: " + ((MinimaxMovement) one).getAverageTimePerMove());
 		}
@@ -266,8 +297,8 @@ public class GameController {
 		drawBoard(gc);
 		for (int i = 0; i < board.getBoardLength(); i++) {
 			for (int j = -1; j < board.getBoardHeight(i); j++) {
-				if (j == -1)
-					System.out.println("-");
+				if (j == -1) {}
+
 				else if (board.getPiece(i, j) == Type.WHITE)
 					drawPlayer(gc, j, i, SetColor.WHITE);
 				else if (board.getPiece(i, j) == Type.BLACK)
@@ -278,6 +309,10 @@ public class GameController {
 					drawPlayer(gc, j, i, SetColor.BLACK_KING);
 			}
 		}
+	}
+	
+	private void displayMessage(String message) {
+		logField.setText(message);
 	}
 
 }

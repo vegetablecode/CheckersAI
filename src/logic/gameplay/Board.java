@@ -273,7 +273,7 @@ public class Board {
 			}
 
 		}
-
+		
 		moves.addAll(getValidSkipMoves(posX, posY, side));
 		return moves;
 	}
